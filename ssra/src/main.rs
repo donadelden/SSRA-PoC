@@ -95,7 +95,7 @@ fn test_everything() {
     let mut durations_userk: Vec<Duration> = Vec::new();
     let mut durations_enc: Vec<Duration> = Vec::new();
     let mut durations_dec: Vec<Duration> = Vec::new();
-    for _ in 0..100 {
+    for i in 0..100 {
         let plaintext_bytes: Vec<u8> = (0..100).map(|_| rand::random::<u8>()).collect();
 
         let start = Instant::now();
@@ -117,9 +117,9 @@ fn test_everything() {
         let plaintext = decrypt(&sk, &ct_cp).unwrap();
         let end = Instant::now();
         durations_dec.push(end - start);
-
+        
+        println!("Iteration {} completed", i + 1);
         std::thread::sleep(Duration::from_secs(1));
-        println!("Iteration {} completed", _ + 1);
     }
 
 
