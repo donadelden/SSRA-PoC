@@ -95,7 +95,7 @@ fn test_everything() {
     let mut durations_userk: Vec<Duration> = Vec::new();
     let mut durations_enc: Vec<Duration> = Vec::new();
     let mut durations_dec: Vec<Duration> = Vec::new();
-    for i in 0..100 {
+    for i in 0..10 {
         let plaintext_bytes: Vec<u8> = (0..100).map(|_| rand::random::<u8>()).collect();
 
         let start = Instant::now();
@@ -119,40 +119,39 @@ fn test_everything() {
         durations_dec.push(end - start);
         
         println!("Iteration {} completed", i + 1);
-        std::thread::sleep(Duration::from_secs(1));
+        //std::thread::sleep(Duration::from_secs(1));
     }
 
 
     let mean_masterk: Duration = durations_masterk.iter().sum::<Duration>() / durations_masterk.len() as u32;
     let stddev_masterk: f64 = (durations_masterk.iter().map(|d| {
-        let diff = *d - mean_masterk;
-        diff.as_secs_f64().powi(2)
+        let diff = d.as_secs_f64() - mean_masterk.as_secs_f64();
+        diff.powi(2)
     }).sum::<f64>() / durations_masterk.len() as f64).sqrt();
+    println!("Mean Master Key Generation Time: {:?}", mean_masterk);
+    println!("Standard Deviation: {:?}", stddev_masterk);
 
     let mean_userk: Duration = durations_userk.iter().sum::<Duration>() / durations_userk.len() as u32;
     let stddev_userk: f64 = (durations_userk.iter().map(|d| {
-        let diff = *d - mean_userk;
-        diff.as_secs_f64().powi(2)
+        let diff = d.as_secs_f64() - mean_userk.as_secs_f64();
+        diff.powi(2)
     }).sum::<f64>() / durations_userk.len() as f64).sqrt();
+    println!("Mean User Key Generation Time: {:?}", mean_userk);
+    println!("Standard Deviation: {:?}", stddev_userk);
 
     let mean_enc: Duration = durations_enc.iter().sum::<Duration>() / durations_enc.len() as u32;
     let stddev_enc: f64 = (durations_enc.iter().map(|d| {
-        let diff = *d - mean_enc;
-        diff.as_secs_f64().powi(2)
+        let diff = d.as_secs_f64() - mean_enc.as_secs_f64();
+        diff.powi(2)
     }).sum::<f64>() / durations_enc.len() as f64).sqrt();
+    println!("Mean Encryption Time: {:?}", mean_enc);
+    println!("Standard Deviation: {:?}", stddev_enc);
 
     let mean_dec: Duration = durations_dec.iter().sum::<Duration>() / durations_dec.len() as u32;
     let stddev_dec: f64 = (durations_dec.iter().map(|d| {
-        let diff = *d - mean_dec;
-        diff.as_secs_f64().powi(2)
+        let diff = d.as_secs_f64() - mean_dec.as_secs_f64();
+        diff.powi(2)
     }).sum::<f64>() / durations_dec.len() as f64).sqrt();
-
-    println!("Mean Master Key Generation Time: {:?}", mean_masterk);
-    println!("Standard Deviation: {:?}", stddev_masterk);
-    println!("Mean User Key Generation Time: {:?}", mean_userk);
-    println!("Standard Deviation: {:?}", stddev_userk);
-    println!("Mean Encryption Time: {:?}", mean_enc);
-    println!("Standard Deviation: {:?}", stddev_enc);
     println!("Mean Decryption Time: {:?}", mean_dec);
     println!("Standard Deviation: {:?}", stddev_dec);   
 }
