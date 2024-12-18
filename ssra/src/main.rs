@@ -95,7 +95,7 @@ fn test_everything() {
     let mut durations_userk: Vec<Duration> = Vec::new();
     let mut durations_enc: Vec<Duration> = Vec::new();
     let mut durations_dec: Vec<Duration> = Vec::new();
-    for i in 0..10 {
+    for i in 0..100 {
         let plaintext_bytes: Vec<u8> = (0..100).map(|_| rand::random::<u8>()).collect();
 
         let start = Instant::now();
