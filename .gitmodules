@@ -1,0 +1,3 @@
+[submodule "ssra/rabe"]
+	path = ssra/rabe
+	url = https://github.com/Fraunhofer-AISEC/rabe
