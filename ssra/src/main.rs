@@ -119,7 +119,7 @@ fn main() {
 
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        eprintln!("Usage: {} <robot|tutor|user> [<message_len>]", args[0]);
+        eprintln!("Usage: {} <robot|tutor|user|all> [<message_len>]", args[0]);
         std::process::exit(1);
     }
     let role = &args[1];
@@ -150,7 +150,7 @@ fn main() {
             decrypt_cpabe();
         },
         _ => {
-            eprintln!("Invalid role: {}, should be robot, tutor, or user.", role);
+            eprintln!("Invalid role: {}, should be robot, tutor, or user. Use all to run all steps.", role);
             std::process::exit(1);
         }
     }
