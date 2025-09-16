@@ -4,6 +4,9 @@ use rabe::utils::policy::pest::PolicyLanguage;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::env;
+use std::time::Duration;
+use rand::distributions::Alphanumeric;
+use rand::Rng;
 
 
 fn encrypt_cpabe(policy: &str, plaintext: &str) {
@@ -14,10 +17,32 @@ fn encrypt_cpabe(policy: &str, plaintext: &str) {
     println!("Public key loaded successfully");
 
     let plaintext_bytes = plaintext.as_bytes();
-    let start = Instant::now();
-    let ct_cp: CpAbeCiphertext = encrypt(&pk, &policy, PolicyLanguage::HumanPolicy, &plaintext_bytes).unwrap();
-    let end = Instant::now();
-    println!("Encryption Time: {:?}", end - start);
+    let mut times = Vec::with_capacity(100);
+    let mut ct_cp = None;
+
+    for _ in 0..100 {
+        let start = Instant::now();
+        let ct = encrypt(&pk, &policy, PolicyLanguage::HumanPolicy, &plaintext_bytes).unwrap();
+        let end = Instant::now();
+        times.push(end.duration_since(start));
+        ct_cp = Some(ct);
+    }
+
+    // Calculate mean and std deviation in milliseconds
+    let total: Duration = times.iter().sum();
+    let mean = total / times.len() as u32;
+
+    let mean_ms = mean.as_secs_f64() * 1000.0;
+    let std = (times.iter()
+        .map(|t| {
+            let diff = t.as_secs_f64() * 1000.0 - mean_ms;
+            diff * diff
+        })
+        .sum::<f64>() / times.len() as f64)
+        .sqrt();
+
+    println!("Encryption Mean Time: {:.3} ms", mean_ms);
+    println!("Encryption Std Dev: {:.3} ms", std);
 
     let mut enc_file = File::create("./shared/enc.bin").expect("Unable to create file");
     let enc_bytes = bincode::serialize(&ct_cp).expect("Serialization failed");
@@ -27,10 +52,36 @@ fn encrypt_cpabe(policy: &str, plaintext: &str) {
 }
 
 fn generate_master_keys() {
-    let start = Instant::now();
-    let (pk, msk) = setup();
-    let end = Instant::now();
-    println!("Key Generation Time: {:?}", end-start);
+    let mut times = Vec::with_capacity(100);
+    let mut pk = None;
+    let mut msk = None;
+
+    for _ in 0..100 {
+        let start = Instant::now();
+        let (cur_pk, cur_msk) = setup();
+        let end = Instant::now();
+        times.push(end.duration_since(start));
+        pk = Some(cur_pk);
+        msk = Some(cur_msk);
+    }
+
+    // Calculate mean and std deviation in milliseconds
+    let total: Duration = times.iter().sum();
+    let mean = total / times.len() as u32;
+    let mean_ms = mean.as_secs_f64() * 1000.0;
+    let std = (times.iter()
+        .map(|t| {
+            let diff = t.as_secs_f64() * 1000.0 - mean_ms;
+            diff * diff
+        })
+        .sum::<f64>() / times.len() as f64)
+        .sqrt();
+
+    println!("Key Generation Mean Time: {:.3} ms", mean_ms);
+    println!("Key Generation Std Dev: {:.3} ms", std);
+
+    let pk = pk.unwrap();
+    let msk = msk.unwrap();
 
     let mut pk_file = File::create("./shared/pk.bin").unwrap();
     pk_file.write_all(&bincode::serialize(&pk).unwrap()).unwrap();
@@ -51,10 +102,33 @@ fn generate_user_keys(attributes: Vec<&str>) {
     msk_file.read_to_end(&mut msk_bytes).expect("Unable to read master secret key data");
     let msk: CpAbeMasterKey = bincode::deserialize(&msk_bytes).expect("Unable to deserialize master secret key");
 
-    let start = Instant::now();
-    let sk: CpAbeSecretKey = keygen(&pk, &msk, &attributes).unwrap();
-    let end = Instant::now();
-    println!("User Key Generation Time: {:?}", end - start);
+    let mut times = Vec::with_capacity(100);
+    let mut sk = None;
+
+    for _ in 0..100 {
+        let start = Instant::now();
+        let cur_sk: CpAbeSecretKey = keygen(&pk, &msk, &attributes).unwrap();
+        let end = Instant::now();
+        times.push(end.duration_since(start));
+        sk = Some(cur_sk);
+    }
+
+    // Calculate mean and std deviation in milliseconds
+    let total: Duration = times.iter().sum();
+    let mean = total / times.len() as u32;
+    let mean_ms = mean.as_secs_f64() * 1000.0;
+    let std = (times.iter()
+        .map(|t| {
+            let diff = t.as_secs_f64() * 1000.0 - mean_ms;
+            diff * diff
+        })
+        .sum::<f64>() / times.len() as f64)
+        .sqrt();
+
+    println!("User Key Generation Mean Time: {:.3} ms", mean_ms);
+    println!("User Key Generation Std Dev: {:.3} ms", std);
+
+    let sk = sk.unwrap();
 
     let mut sk_file = File::create("./shared/sk.bin").expect("Unable to create secret key file");
     sk_file.write_all(&bincode::serialize(&sk).expect("Serialization failed")).expect("Unable to write secret key data");
@@ -75,26 +149,82 @@ fn decrypt_cpabe() {
     enc_file.read_to_end(&mut enc_bytes).expect("Unable to read encrypted data");
     let ct_cp: CpAbeCiphertext = bincode::deserialize(&enc_bytes).expect("Unable to deserialize encrypted data");
 
-    let start = Instant::now();
-    let plaintext = decrypt(&sk, &ct_cp).unwrap();
-    let end = Instant::now();
-    println!("Decryption Time: {:?}", end - start);
+    let mut times = Vec::with_capacity(100);
+    let mut plaintext = None;
+
+    for _ in 0..100 {
+        let start = Instant::now();
+        let pt = decrypt(&sk, &ct_cp).unwrap();
+        let end = Instant::now();
+        times.push(end.duration_since(start));
+        plaintext = Some(pt);
+    }
+
+    // Calculate mean and std deviation in milliseconds
+    let total: Duration = times.iter().sum();
+    let mean = total / times.len() as u32;
+    let mean_ms = mean.as_secs_f64() * 1000.0;
+    let std = (times.iter()
+        .map(|t| {
+            let diff = t.as_secs_f64() * 1000.0 - mean_ms;
+            diff * diff
+        })
+        .sum::<f64>() / times.len() as f64)
+        .sqrt();
+
+    println!("Decryption Mean Time: {:.3} ms", mean_ms);
+    println!("Decryption Std Dev: {:.3} ms", std);
+
+    let plaintext = plaintext.unwrap();
 
     println!("Decrypted data: {:?}", String::from_utf8(plaintext).expect("Unable to convert to string"));
 }
+
+fn generate_message(length: usize) -> String {
+    let base = "dance like no one's watching, encrypt like everyone is!";
+    let mut msg = String::new();
+    let mut toggle = true;
+    let mut rng = rand::thread_rng();
+
+    while msg.len() < length {
+        if toggle {
+            msg.push_str(base);
+        } else {
+            let rand_len = std::cmp::min(16, length - msg.len());
+            let rand_str: String = (&mut rng)
+                .sample_iter(&Alphanumeric)
+                .take(rand_len)
+                .map(char::from)
+                .collect();
+            msg.push_str(&rand_str);
+        }
+        toggle = !toggle;
+    }
+    msg.truncate(length);
+    msg
+}
+
 
 fn main() {
 
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        eprintln!("Usage: {} <robot|tutor|user>", args[0]); 
+        eprintln!("Usage: {} <robot|tutor|user> [<message_len>]", args[0]);
         std::process::exit(1);
     }
     let role = &args[1];
+    let message_len = if args.len() >= 3 {
+        args[2].parse::<usize>().unwrap_or(1000)
+    } else {
+        1000
+    };
+
+    let message = generate_message(message_len);
+    println!("Message length: {}", message.len());
 
     match role.as_str() {
         "robot" => {
-            encrypt_cpabe(r#""A" and "B""#, "dance like no one's watching, encrypt like everyone is!dance like no one's watching, encrypt like ev");
+            encrypt_cpabe(r#""A" and "B""#,  &message);
         },
         "tutor" => {
             generate_master_keys();
