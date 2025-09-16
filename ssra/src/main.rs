@@ -149,14 +149,12 @@ fn decrypt_cpabe() {
     let ct_cp = ct_cp.expect("Encrypted data is None");
 
     let mut times = Vec::with_capacity(100);
-    let mut plaintext = None;
 
     for _ in 0..100 {
         let start = Instant::now();
         let pt = decrypt(&sk, &ct_cp).unwrap();
         let end = Instant::now();
         times.push(end.duration_since(start));
-        plaintext = Some(pt);
     }
 
     // Calculate mean and std deviation in milliseconds
