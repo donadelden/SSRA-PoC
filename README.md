@@ -4,7 +4,7 @@ This is a proof of concept for the *SSRA: A Secure Social Robot Architecture* pr
 
 ## Run it with Docker
 - Compile the app: `cd ssra; docker build -t ssra .`
-- Run it: `sudo docker run -v ./shared:/usr/src/myapp/shared -it --rm --name running-ssra ssra <role>`
+- Run it: `docker run -v ./shared:/usr/src/myapp/shared -it --rm --name running-ssra ssra <role>`
 
 Possible roles:
 - `tutor`: generates master keys and a user key
