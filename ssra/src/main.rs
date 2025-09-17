@@ -174,27 +174,13 @@ fn decrypt_cpabe() {
 }
 
 fn generate_message(length: usize) -> String {
-    let base = "dance like no one's watching, encrypt like everyone is!";
-    let mut msg = String::new();
-    let mut toggle = true;
     let mut rng = rand::thread_rng();
-
-    while msg.len() < length {
-        if toggle {
-            msg.push_str(base);
-        } else {
-            let rand_len = std::cmp::min(16, length - msg.len());
-            let rand_str: String = (&mut rng)
-                .sample_iter(&Alphanumeric)
-                .take(rand_len)
-                .map(char::from)
-                .collect();
-            msg.push_str(&rand_str);
-        }
-        toggle = !toggle;
-    }
-    msg.truncate(length);
-    msg
+    let bytes: Vec<u8> = (&mut rng)
+        .sample_iter(&Alphanumeric)
+        .take(length)
+        .map(|c| c as u8)
+        .collect();
+    String::from_utf8_lossy(&bytes).into_owned()
 }
 
 
