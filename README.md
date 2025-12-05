@@ -1,6 +1,6 @@
 # SSRA
 
-This is a proof of concept for the *SSRA: A Secure Social Robot Architecture* project.
+This is a proof of concept for the *Secure Social Robots Architecture (SSRA)* project.
 
 ## Run it with Docker
 - Compile the app: `cd ssra; docker build -t ssra .`
